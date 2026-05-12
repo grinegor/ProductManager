@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "pm_agent": "./src/pm_agent/langgraph_app.py:graph"
+  },
+  "env": ".env"
+}
