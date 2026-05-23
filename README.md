@@ -1,63 +1,63 @@
 # Senior Product Manager AI Agent (MVP)
 
-Lightweight local-first MVP for a domain-expert PM assistant in D2C/B2C weight-loss subscription and telehealth products.
+Локальный облегченный MVP доменно-экспертного PM-ассистента для D2C/B2C продуктов с подпиской в нише снижения веса и telehealth.
 
-## Stack
+## Стек
 - Python
 - LangGraph
-- OpenAI API (`gpt-5.2` only for LLM calls)
+- OpenAI API (`gpt-5.2` только для LLM-вызовов)
 - OpenAI text embeddings (`text-embedding-3-small`)
 - FAISS local vector store
 - Streamlit UI
 
-## Project Structure
-- `app.py` - Streamlit chat app + debug sidebar.
-- `src/pm_agent/config.py` - Environment settings.
-- `src/pm_agent/llm.py` - OpenAI chat + embedding wrappers.
-- `src/pm_agent/prompts.py` - System prompts and routing keywords.
-- `src/pm_agent/rag.py` - Document loading, chunking, FAISS build/retrieval.
-- `src/pm_agent/orchestrator.py` - LangGraph sequential orchestrator + subagents.
-- `src/pm_agent/memory.py` - Conversation summary memory.
-- `scripts/ingest_docs.py` - Build FAISS index from `/docs`.
-- `docs/*` - Seed knowledge base content.
+## Структура проекта
+- `app.py` - чат-приложение Streamlit + debug-панель в сайдбаре.
+- `src/pm_agent/config.py` - настройки окружения.
+- `src/pm_agent/llm.py` - обертки для OpenAI chat и embeddings.
+- `src/pm_agent/prompts.py` - системные промпты и ключевые слова роутинга.
+- `src/pm_agent/rag.py` - загрузка документов, чанкинг, сборка/поиск в FAISS.
+- `src/pm_agent/orchestrator.py` - последовательный оркестратор LangGraph + сабагенты.
+- `src/pm_agent/memory.py` - summary-память диалога.
+- `scripts/ingest_docs.py` - сборка FAISS-индекса из `/docs`.
+- `docs/*` - стартовая база знаний.
 
 ## Quickstart
-1. Create and activate a virtual environment.
-2. Install dependencies:
+1. Создайте и активируйте виртуальное окружение.
+2. Установите зависимости:
    ```bash
    python -m pip install -r requirements.txt
    ```
-3. Configure environment:
+3. Настройте окружение:
    ```bash
    cp .env.example .env
-   # set OPENAI_API_KEY
+   # укажите OPENAI_API_KEY
    ```
-   Optional model fallback if `gpt-5.2` is unavailable for your key:
+   Опционально: fallback-модель, если `gpt-5.2` недоступна для вашего ключа:
    ```bash
    # in .env
    OPENAI_MODEL=gpt-5.2
    OPENAI_FALLBACK_MODEL=gpt-5
    OPENAI_REASONING_EFFORT=high
    ```
-4. Build local index:
+4. Соберите локальный индекс:
    ```bash
    python scripts/ingest_docs.py
    ```
-5. Run UI:
+5. Запустите UI:
    ```bash
    streamlit run app.py
    ```
 
-## Import External Articles Into KB
-Use this to import curated URLs into `docs/growth` and `docs/competitors`:
+## Импорт внешних статей в базу знаний
+Используйте это, чтобы импортировать выбранные URL в `docs/growth` и `docs/competitors`:
 
 ```bash
 python scripts/import_external_articles.py
 python scripts/ingest_docs.py
 ```
 
-## Notes
-- Subagents are prompt-routed and called sequentially by the orchestrator.
-- Subagent handoff uses a compressed shared JSON contract (`agent`, `summary`, `key_findings`, `recommendations`, `assumptions`, `compliance_flags`, optional `experiments`).
-- No autonomous loops, no external DB, no enterprise infra.
-- Debug sidebar shows active subagents, retrieved chunks, and token usage.
+## Примечания
+- Сабагенты роутятся промптом и вызываются оркестратором последовательно.
+- Передача данных между сабагентами использует сжатый общий JSON-контракт (`agent`, `summary`, `key_findings`, `recommendations`, `assumptions`, `compliance_flags`, опционально `experiments`).
+- Нет автономных циклов, внешней БД и enterprise-инфраструктуры.
+- В debug-сайдбаре отображаются активные сабагенты, извлеченные чанки и расход токенов.
