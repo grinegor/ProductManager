@@ -109,8 +109,6 @@ DEMO_MODE=true streamlit run app.py
 
 Screenshots:
 
-![Demo flow](docs/assets/demo_flow.gif)
-
 ![Main chat UI](docs/assets/main_chat_ui.png)
 
 ![Debug sidebar with active subagents](docs/assets/debug_sidebar_subagents.png)
