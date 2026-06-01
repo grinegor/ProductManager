@@ -110,16 +110,8 @@ DEMO_MODE=true streamlit run app.py
 Screenshots:
 
 ![Main chat UI](docs/assets/main_chat_ui.png)
-'Main chat UI.'
-
-![Debug sidebar with active subagents](docs/assets/debug_sidebar_subagents.png)
-'Debug sidebar with active subagents.'
-
-![Retrieved chunks](docs/assets/retrieved_chunks.png)
-'Retrieved chunks.'
 
 ![Final answer example](docs/assets/final_answer_example.png)
-'Final answer example.'
 
 ## Setup
 
