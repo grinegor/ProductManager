@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from pm_agent.config import load_settings
+from pm_agent.demo import DemoLLMClient, DemoRAGStore
 from pm_agent.llm import OpenAIClient
 from pm_agent.memory import ConversationMemory
 from pm_agent.orchestrator import PMOrchestrator
@@ -62,14 +63,18 @@ def render_assistant_plain(text: str, container) -> None:
 @st.cache_resource
 def build_runtime() -> tuple:
     settings = load_settings()
-    llm_client = OpenAIClient(
-        api_key=settings.openai_api_key,
-        model=settings.openai_model,
-        embedding_model=settings.embedding_model,
-        fallback_model=settings.fallback_openai_model,
-        reasoning_effort=settings.openai_reasoning_effort,
-    )
-    rag_store = RAGStore(settings, llm_client)
+    if settings.demo_mode:
+        llm_client = DemoLLMClient()
+        rag_store = DemoRAGStore()
+    else:
+        llm_client = OpenAIClient(
+            api_key=settings.openai_api_key,
+            model=settings.openai_model,
+            embedding_model=settings.embedding_model,
+            fallback_model=settings.fallback_openai_model,
+            reasoning_effort=settings.openai_reasoning_effort,
+        )
+        rag_store = RAGStore(settings, llm_client)
     orchestrator = PMOrchestrator(settings, llm_client, rag_store)
     memory = ConversationMemory(llm_client=llm_client, refresh_after_messages=8)
     return settings, rag_store, orchestrator, memory
@@ -115,6 +120,22 @@ def render_debug_panel(debug_data: dict, memory_summary: str, has_index: bool) -
         st.write(subagent_outputs.get("subscription", ""))
         st.markdown("**ComplianceAgent**")
         st.write(subagent_outputs.get("compliance", ""))
+
+
+def build_debug_data(result, token_usage: dict[str, int] | None = None) -> dict:
+    return {
+        "active_subagents": result.active_subagents,
+        "retrieved_chunks": [
+            {
+                "source": c.source,
+                "score": c.score,
+                "text": c.text,
+            }
+            for c in result.retrieved_chunks
+        ],
+        "token_usage": token_usage or result.token_usage,
+        "subagent_outputs": result.subagent_outputs,
+    }
 
 
 def stream_text(text: str, delay: float = 0.01) -> None:
@@ -182,7 +203,7 @@ def main() -> None:
         unsafe_allow_html=True,
     )
     st.title("Senior Product Manager AI Agent (Weight Loss / Telehealth)")
-    st.caption("MVP stack: LangGraph + GPT-5.2 + OpenAI Small Embeddings + FAISS + Streamlit")
+    st.caption("MVP stack: LangGraph + OpenAI GPT-5.4 + OpenAI embeddings + FAISS + Streamlit")
 
     settings, rag_store, orchestrator, memory = build_runtime()
 
@@ -193,8 +214,26 @@ def main() -> None:
     if "debug_data" not in st.session_state:
         st.session_state.debug_data = {}
 
+    if settings.demo_mode and st.query_params.get("demo") == "1" and not st.session_state.messages:
+        demo_query = (
+            "We have a D2C weight-loss subscription funnel with paid social traffic, "
+            "quiz onboarding, a 7-day trial, and high month-1 churn. What should we fix first?"
+        )
+        result = orchestrator.run(
+            user_query=demo_query,
+            chat_history=[{"role": "user", "content": demo_query}],
+            memory_summary="",
+        )
+        st.session_state.messages = [
+            {"role": "user", "content": demo_query},
+            {"role": "assistant", "content": result.final_answer},
+        ]
+        st.session_state.debug_data = build_debug_data(result)
+
     with st.sidebar:
         st.header("Knowledge Base")
+        if settings.demo_mode:
+            st.info("Demo mode is enabled. The app uses deterministic local responses and no OpenAI calls.")
         st.write(f"Primary LLM: `{settings.openai_model}`")
         st.write(
             f"Fallback LLM: `{settings.fallback_openai_model or '(disabled)'}`"
@@ -263,19 +302,7 @@ def main() -> None:
     token_usage["completion_tokens"] = token_usage.get("completion_tokens", 0) + summary_usage.completion_tokens
     token_usage["total_tokens"] = token_usage.get("total_tokens", 0) + summary_usage.total_tokens
 
-    st.session_state.debug_data = {
-        "active_subagents": result.active_subagents,
-        "retrieved_chunks": [
-            {
-                "source": c.source,
-                "score": c.score,
-                "text": c.text,
-            }
-            for c in result.retrieved_chunks
-        ],
-        "token_usage": token_usage,
-        "subagent_outputs": result.subagent_outputs,
-    }
+    st.session_state.debug_data = build_debug_data(result, token_usage=token_usage)
 
 
 if __name__ == "__main__":

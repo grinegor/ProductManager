@@ -76,6 +76,16 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(settings.max_history_messages, 11)
             self.assertTrue(settings.data_dir.exists())
 
+    @patch.dict(os.environ, {"DEMO_MODE": "true"}, clear=True)
+    def test_load_settings_allows_demo_mode_without_api_key(self) -> None:
+        with patch("pm_agent.config.load_dotenv", return_value=None):
+            settings = load_settings()
+
+        self.assertTrue(settings.demo_mode)
+        self.assertEqual(settings.openai_api_key, "demo-mode-no-api-key")
+        self.assertEqual(settings.openai_model, "gpt-5.4")
+        self.assertEqual(settings.fallback_openai_model, "gpt-5.4-mini")
+
 
 if __name__ == "__main__":
     unittest.main()
