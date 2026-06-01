@@ -88,6 +88,36 @@ class OrchestratorTests(unittest.TestCase):
         parsed = orch._extract_json_object("preface {\"agent\":\"GrowthAgent\",\"summary\":\"ok\"} suffix")
         self.assertEqual(parsed["agent"], "GrowthAgent")
 
+    def test_normalize_subagent_output_limits_schema(self) -> None:
+        orch = PMOrchestrator(self.make_settings(), FakeLLMForOrchestrator(), FakeRAGStore())
+        normalized = orch._normalize_subagent_output(
+            {
+                "agent": "GrowthAgent",
+                "summary": "ok",
+                "key_findings": ["a", "b", "c", "d"],
+                "recommendations": [
+                    {"title": "r1", "rationale": "why", "expected_impact": "high", "effort": "S", "success_metric": "CVR"},
+                    {"title": "r2"},
+                    {"title": "r3"},
+                    {"title": "r4"},
+                ],
+                "experiments": [
+                    {"hypothesis": "h1", "metric": "m1", "guardrail_metric": "g1", "decision_rule": "d1"},
+                    {"hypothesis": "h2"},
+                    {"hypothesis": "h3"},
+                ],
+                "assumptions": ["a1"],
+                "compliance_flags": ["f1"],
+            },
+            agent="GrowthAgent",
+            raw="raw",
+        )
+
+        self.assertEqual(len(normalized["key_findings"]), 3)
+        self.assertEqual(len(normalized["recommendations"]), 3)
+        self.assertEqual(len(normalized["experiments"]), 2)
+        self.assertEqual(normalized["raw_text"], "")
+
     def test_run_end_to_end(self) -> None:
         orch = PMOrchestrator(self.make_settings(), FakeLLMForOrchestrator(), FakeRAGStore())
         result = orch.run(

@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import random
 import statistics
+import sys
 import time
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
 
 from pm_agent.config import Settings
 from pm_agent.llm import UsageStats

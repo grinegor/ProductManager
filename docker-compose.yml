@@ -1,0 +1,20 @@
+services:
+  product-manager-agent:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      DEMO_MODE: ${DEMO_MODE:-false}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.4}
+      OPENAI_FALLBACK_MODEL: ${OPENAI_FALLBACK_MODEL:-gpt-5.4-mini}
+      OPENAI_REASONING_EFFORT: ${OPENAI_REASONING_EFFORT:-high}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      DOCS_DIR: /app/docs
+      DATA_DIR: /app/data
+      TOP_K: ${TOP_K:-4}
+      MAX_HISTORY_MESSAGES: ${MAX_HISTORY_MESSAGES:-8}
+    volumes:
+      - ./docs:/app/docs
+      - ./data:/app/data
+    command: streamlit run app.py --server.address=0.0.0.0 --server.port=8501
