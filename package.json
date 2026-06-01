@@ -1,0 +1,15 @@
+{
+  "name": "product-manager",
+  "version": "1.0.0",
+  "description": "Lightweight local-first MVP for a domain-expert PM assistant in D2C/B2C weight-loss subscription and telehealth products.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
